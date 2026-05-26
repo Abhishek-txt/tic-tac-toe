@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unbeatable Tic-Tac-Toe (AI Mode)</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Title and description -->
+        <header class="game-header">
+            <h1>NEON GRID</h1>
+            <div class="subtitle">Developed by Abhishek Das Amit</div>
+        </header>
+
+        <!-- Stats and scoreboard -->
+        <div class="scoreboard">
+            <div class="score-card player-o">
+                <span class="label">YOU (O)</span>
+                <span class="value" id="score-player">0</span>
+            </div>
+            <div class="score-card draws">
+                <span class="label">TIES</span>
+                <span class="value" id="score-draws">0</span>
+            </div>
+            <div class="score-card player-x">
+                <span class="label">AI (X)</span>
+                <span class="value" id="score-ai">0</span>
+            </div>
+        </div>
+
+        <!-- Dynamic Status Message -->
+        <div class="status-banner" id="status-text">AI is thinking…</div>
+
+        <!-- 3x3 Grid Board -->
+        <div class="board-wrapper">
+            <div class="board" id="board">
+                <div class="cell" data-index="0"></div>
+                <div class="cell" data-index="1"></div>
+                <div class="cell" data-index="2"></div>
+                <div class="cell" data-index="3"></div>
+                <div class="cell" data-index="4"></div>
+                <div class="cell" data-index="5"></div>
+                <div class="cell" data-index="6"></div>
+                <div class="cell" data-index="7"></div>
+                <div class="cell" data-index="8"></div>
+                <!-- Dynamic SVG Strike Line for winners -->
+                <svg class="strike-line" id="strike-svg" viewBox="0 0 300 300">
+                    <line id="strike-line-elem" x1="0" y1="0" x2="0" y2="0" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="controls">
+            <button class="action-btn" id="btn-reset">RESTART GRID</button>
+            <button class="action-btn secondary" id="btn-switch-start">FIRST: AI</button>
+            <button class="action-btn secondary" id="btn-audio">MUTE SOUND</button>
+        </div>
+
+        <!-- Mode details -->
+        <footer class="game-footer">
+            <div><span class="badge">AGGRESSIVE MINIMAX + FORK AI</span></div>
+        </footer>
+    </div>
+
+    <!-- Instructions for desktop player -->
+    <div class="guide-panel">
+        <h3>How to Play</h3>
+        <p>⚠️ <strong>The AI moves first by default</strong>, but you can change this using the "FIRST" button.</p>
+        <p>1. Tap any empty cell to place your <strong>O</strong>.</p>
+        <p>2. The AI uses Minimax + Fork Strategy to try and trap you.</p>
+        <p>3. If you go second, winning is mathematically impossible. If you go first, you might be able to force a tie, but don't make a single mistake!</p>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
