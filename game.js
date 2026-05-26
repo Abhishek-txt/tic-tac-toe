@@ -254,76 +254,21 @@ class TicTacToe {
     getBestMove() {
         const empty = this.emptyIndices();
 
-        // ── 1. Instant win — take it now ───────────────────────────
+        // ── 1. Instant win — take it now (speed shortcut) ──────────
         for (const i of empty) {
             this.board[i] = this.ai;
             if (this.findWinLine(this.board)) { this.board[i] = ''; return i; }
             this.board[i] = '';
         }
 
-        // ── 2. Block human's instant win ───────────────────────────
+        // ── 2. Block human's instant win (speed shortcut) ──────────
         for (const i of empty) {
             this.board[i] = this.human;
             if (this.findWinLine(this.board)) { this.board[i] = ''; return i; }
             this.board[i] = '';
         }
 
-        // ── 3. Create a FORK (two threats at once) ─────────────────
-        const forkMove = this.findForkMove(this.ai);
-        if (forkMove !== null) return forkMove;
-
-        // ── 4. Block human's fork ──────────────────────────────────
-        const humanFork = this.findForkMove(this.human);
-        if (humanFork !== null) {
-            // Attack to force human to defend rather than build fork
-            const attackMove = this.findAttackToBlockFork(humanFork);
-            if (attackMove !== null) return attackMove;
-            return humanFork; // fallback: just block directly
-        }
-
-        // ── 5. Opening book ────────────────────────────────────────
-        const moveCount = 9 - empty.length;
-
-        // First move: always center
-        if (moveCount === 0) return 4;
-
-        // Second move (AI's 2nd): pick best strategic position
-        if (moveCount === 2) {
-            // Human responded to our center — take a corner
-            if (this.board[4] === this.ai) {
-                // Pick the corner that sets up the most forks
-                const corners = [0,2,6,8].filter(i => this.board[i] === '');
-                if (corners.length > 0) {
-                    // Prefer corner opposite to where human played
-                    const humanMove = this.board.findIndex((v,i) => v === this.human);
-                    const opposite = { 0:8, 1:7, 2:6, 3:5, 5:3, 6:2, 7:1, 8:0 };
-                    if (opposite[humanMove] !== undefined && this.board[opposite[humanMove]] === '') {
-                        return opposite[humanMove];
-                    }
-                    return corners[0];
-                }
-            }
-        }
-
-        // ── 6. Take center if free ─────────────────────────────────
-        if (this.board[4] === '') return 4;
-
-        // ── 7. Take opposite corner to human ───────────────────────
-        const oppCorners = [[0,8],[2,6]];
-        for (const [a,b] of oppCorners) {
-            if (this.board[a] === this.human && this.board[b] === '') return b;
-            if (this.board[b] === this.human && this.board[a] === '') return a;
-        }
-
-        // ── 8. Take any corner ─────────────────────────────────────
-        const freeCorner = [0,2,6,8].find(i => this.board[i] === '');
-        if (freeCorner !== undefined) return freeCorner;
-
-        // ── 9. Take any edge ──────────────────────────────────────
-        const freeEdge = [1,3,5,7].find(i => this.board[i] === '');
-        if (freeEdge !== undefined) return freeEdge;
-
-        // Fallback: minimax (should never reach here)
+        // ── 3. Pure minimax — provably optimal, cannot be beaten ───
         return this.minimaxRoot();
     }
 
