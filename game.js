@@ -1,10 +1,3 @@
-/**
- * Unbeatable Tic-Tac-Toe — Aggressive AI Edition
- * The AI goes FIRST, uses an opening book + fork strategy + minimax.
- * The human can only tie at best; most games the AI wins.
- */
-
-// ─── Sound FX via Web Audio API ────────────────────────────────────
 class GameAudio {
     constructor() {
         this.ctx = null;
@@ -55,13 +48,12 @@ class GameAudio {
     }
 }
 
-// ─── Main Game Class ───────────────────────────────────────────────
 class TicTacToe {
     constructor() {
         this.board = Array(9).fill('');
-        this.ai     = 'X';   // AI plays X
-        this.human  = 'O';   // Human plays O
-        this.startMode = 'AI'; // 'AI' or 'YOU'
+        this.ai     = 'X';
+        this.human  = 'O';
+        this.startMode = 'AI';
         this.currentPlayer = 'X';
         this.isGameOver = false;
         this.isHumanTurn = false;
@@ -69,7 +61,6 @@ class TicTacToe {
         this.scores = { player: 0, draws: 0, ai: 0 };
         this.audio = new GameAudio();
 
-        // Win‑line SVG coordinates (300×300 viewBox)
         this.winLines = [
             { combo: [0,1,2], coords: { x1:15, y1:50,  x2:285, y2:50  } },
             { combo: [3,4,5], coords: { x1:15, y1:150, x2:285, y2:150 } },
@@ -84,7 +75,6 @@ class TicTacToe {
         this.initDom();
     }
 
-    // ── DOM wiring ─────────────────────────────────────────────────
     initDom() {
         this.dom = {
             cells:       document.querySelectorAll('.cell'),
@@ -120,7 +110,6 @@ class TicTacToe {
         this.resetBoard();
     }
 
-    // ── Reset ──────────────────────────────────────────────────────
     resetBoard() {
         this.board = Array(9).fill('');
         this.currentPlayer = 'X';
@@ -139,7 +128,6 @@ class TicTacToe {
             this.isHumanTurn = false;
             this.dom.status.textContent = 'AI is thinking…';
             this.dom.status.style.color = 'var(--neon-pink)';
-            // AI goes first with a short delay so the player sees the board clear
             setTimeout(() => this.aiMove(), 400);
         } else {
             this.isHumanTurn = true;
@@ -148,7 +136,6 @@ class TicTacToe {
         }
     }
 
-    // ── Human clicks a cell ────────────────────────────────────────
     handleCellClick(idx) {
         if (!this.isHumanTurn || this.board[idx] !== '' || this.isGameOver) return;
 
@@ -164,7 +151,6 @@ class TicTacToe {
         setTimeout(() => this.aiMove(), 300);
     }
 
-    // ── Place marker helper ────────────────────────────────────────
     placeMarker(idx, player) {
         this.board[idx] = player;
         const cell = this.dom.cells[idx];
@@ -172,7 +158,6 @@ class TicTacToe {
         cell.classList.add(player.toLowerCase());
     }
 
-    // ── AI turn ────────────────────────────────────────────────────
     aiMove() {
         if (this.isGameOver) return;
 
@@ -187,7 +172,6 @@ class TicTacToe {
         this.dom.status.style.color = 'var(--text-color)';
     }
 
-    // ── Check for win / draw ───────────────────────────────────────
     checkEnd() {
         const winLine = this.findWinLine(this.board);
         if (winLine) {
@@ -243,36 +227,28 @@ class TicTacToe {
         const color = winner === this.ai ? 'var(--neon-pink)' : 'var(--neon-blue)';
         el.style.stroke = color;
         el.style.filter = `drop-shadow(0 0 8px ${color}) drop-shadow(0 0 15px ${color})`;
-        el.getBoundingClientRect();           // force reflow
+        el.getBoundingClientRect();
         el.style.strokeDashoffset = '0';
     }
-
-    // ════════════════════════════════════════════════════════════════
-    //  AGGRESSIVE AI — Opening Book + Fork Strategy + Minimax
-    // ════════════════════════════════════════════════════════════════
 
     getBestMove() {
         const empty = this.emptyIndices();
 
-        // ── 1. Instant win — take it now (speed shortcut) ──────────
         for (const i of empty) {
             this.board[i] = this.ai;
             if (this.findWinLine(this.board)) { this.board[i] = ''; return i; }
             this.board[i] = '';
         }
 
-        // ── 2. Block human's instant win (speed shortcut) ──────────
         for (const i of empty) {
             this.board[i] = this.human;
             if (this.findWinLine(this.board)) { this.board[i] = ''; return i; }
             this.board[i] = '';
         }
 
-        // ── 3. Pure minimax — provably optimal, cannot be beaten ───
         return this.minimaxRoot();
     }
 
-    // Count how many winning threats a move creates
     countThreats(player, idx) {
         this.board[idx] = player;
         let threats = 0;
@@ -287,7 +263,6 @@ class TicTacToe {
         return threats;
     }
 
-    // Find a move that creates a fork (2+ winning threats simultaneously)
     findForkMove(player) {
         const empty = this.emptyIndices();
         let bestMove = null;
@@ -303,12 +278,9 @@ class TicTacToe {
         return bestMove;
     }
 
-    // When the human could fork, find an attacking move that forces them to defend
-    // AND does NOT give them a fork position as their forced response.
     findAttackToBlockFork(humanForkCell) {
         const empty = this.emptyIndices();
         for (const i of empty) {
-            // Try placing AI here — does it create a single threat?
             this.board[i] = this.ai;
             let createsThreat = false;
             let threatCell = null;
@@ -320,23 +292,20 @@ class TicTacToe {
                 const emptyCount = vals.filter(v => v === '').length;
                 if (aiCount === 2 && emptyCount === 1) {
                     createsThreat = true;
-                    // The cell the human is forced to play
                     threatCell = [a,b,c].find(x => this.board[x] === '');
                 }
             }
             this.board[i] = '';
 
             if (createsThreat && threatCell !== null) {
-                // Simulate human blocking our threat
                 this.board[i] = this.ai;
                 this.board[threatCell] = this.human;
-                // Now check if human can fork after being forced
                 const humanCanStillFork = this.findForkMove(this.human);
                 this.board[i] = '';
                 this.board[threatCell] = '';
 
                 if (humanCanStillFork === null) {
-                    return i; // This attack safely neutralises the fork
+                    return i;
                 }
             }
         }
@@ -347,7 +316,6 @@ class TicTacToe {
         return this.board.reduce((acc, v, i) => { if (v === '') acc.push(i); return acc; }, []);
     }
 
-    // ── Full minimax (fallback) ────────────────────────────────────
     minimaxRoot() {
         let bestScore = -Infinity;
         let bestMove  = null;
@@ -391,7 +359,6 @@ class TicTacToe {
     }
 }
 
-// ─── Bootstrap ─────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
     window.game = new TicTacToe();
 });
